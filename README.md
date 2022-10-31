@@ -1,7 +1,7 @@
 # How to use 
 To use the Whopper Hub script you Paste this
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/AngeLz79/Whopper-Hub/main/whoppa.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/KittenZs1/Whooper-hub-Halloween/main/whoppa.lua"))()
 ```
 
 # Support
