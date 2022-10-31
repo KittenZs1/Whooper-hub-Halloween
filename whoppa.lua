@@ -1,15 +1,4 @@
---     _                     _         
---    / \   _ __   __ _  ___| |    ____
---   / _ \ | '_ \ / _` |/ _ \ |   |_  /
---  / ___ \| | | | (_| |  __/ |___ / / 
--- /_/   \_\_| |_|\__, |\___|_____/___|
---                 |___/                
 
--- Created by AngeLz
--- Helpers: Axajj
--- We are not responsible for any bans that may occur from using this script.
--- Making your life easier by giving you the scripts for free!
--- DO NOT REUPLOAD THIS SCRIPT OR CLAIM IT AS YOUR OWN
 
 local DiscordLib = loadstring(game:HttpGet "https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/discord")()
 
@@ -18,7 +7,7 @@ getgenv().sf = DiscordLib:Window("Whopper Hub")
 
 local win = getgenv().sf
 
-local serverUrl =  "https://raw.githubusercontent.com/AngeLz79/Whopper-Hub/main/"
+local serverUrl =  "https://raw.githubusercontent.com/KittenZs1/Whopper-hub-Halloween/main/"
 
 coroutine.wrap(function()    
     local id = game.PlaceId
