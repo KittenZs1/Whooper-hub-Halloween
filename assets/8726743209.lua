@@ -201,7 +201,10 @@ return function()
         "Volcanium",
         "Moonstone",
         "Tolmedit",
-        "Dumortierite"
+        "Dumortierite",
+        "Soulstone",
+        "Dirt",
+        "Candy Corn"
     }
     teleportOre:Button(
         "Teleport Ores to Plot",
