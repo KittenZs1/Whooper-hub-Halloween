@@ -30,6 +30,7 @@ return function()
             getgenv().walk = t
         end
     )
+    DiscordLib:Notification("Warning", "All Teleports are currently broken as of last update, We are currently trying to fix this", "Okay!")
     misc:Slider("Jump",50,250,0,
         function(t)
             getgenv().jump = t
