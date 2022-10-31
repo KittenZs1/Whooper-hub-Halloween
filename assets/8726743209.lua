@@ -203,8 +203,7 @@ return function()
         "Tolmedit",
         "Dumortierite",
         "Soulstone",
-        "Dirt",
-        "Candy Corn"
+        "Dirt"
     }
     teleportOre:Button(
         "Teleport Ores to Plot",
