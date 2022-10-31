@@ -5,19 +5,20 @@
 -- /_/   \_\_| |_|\__, |\___|_____/___|
 --                 |___/                
 
--- Refinery Caves 1.0.1 
+-- Refinery Caves 1.0.2 
 -- Created by AngeLz, Ran with the WhopperHub
+-- Helpers: Axajj
 -- We are not responsible for any bans that may occur from using this script.
 -- Making your life easier by giving you the scripts for free!
 -- DO NOT REUPLOAD THIS SCRIPT OR CLAIM IT AS YOUR OWN
 
 return function()
-    if not _G.sf then
+    if not getgenv().sf then
         print("Don't run directly")
     end
 
-    local win = _G.sf
-    local DiscordLib = _G.ff
+    local win = getgenv().sf
+    local DiscordLib = getgenv().ff
     local serv = win:Server("Refinery Caves", "")
     local main = serv:Channel("Main")
     local misc = serv:Channel("Misc")
@@ -26,12 +27,12 @@ return function()
     local teleports = serv:Channel("Teleports")
     misc:Slider("Speed",16,250,0,
         function(t)
-            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = t
+            getgenv().walk = t
         end
     )
     misc:Slider("Jump",50,250,0,
         function(t)
-            game.Players.LocalPlayer.Character.Humanoid.JumpPower = t
+            getgenv().jump = t
         end
     )
     local function teleportBTN(x,y,z, name)
@@ -76,60 +77,9 @@ return function()
     teleportBTN(-596, 194, 1058, "Cable Railway")
     teleportBTN(480, 300, 708, "Meteor Bowl")
     teleportBTN(612, 986, 1519, "Mountain Chair")
-    main:Button(
-        "Spawn Meteor",
-        function()
-            -- justs makes sure its not in the ground
-            if game:GetService("Workspace").Grabable["Meteorite Totem"].Ball.CFrame.Y < 2 then
-                return
-            end
-            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Grabable["Meteorite Totem"].Ball.CFrame
-            task.wait(0.1) 
-            local args = {
-                [1] = game:GetService("Workspace").Grabable["Meteorite Totem"].Ball,
-                [2] = {}
-            }
-            
-            game:GetService("ReplicatedStorage").Events.Grab:InvokeServer(unpack(args))
-            task.wait(0.5)
-            game:GetService("Workspace").Grabable["Meteorite Totem"].Ball.CFrame = CFrame.new(490.649658203125, 303.3324890136719, 710.9194946289062)
-            task.wait(0.3)
-            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Grabable["Meteorite Totem"].Ball.CFrame + Vector3.new(0,10,0)
-            DiscordLib:Notification("Notification", "Meteor Spawning soon...", "Okay!")
-        end
-    )
-    main:Button(
-        "Spawn Meteor V2",
-        function()
-            -- get player location
-            local playerPos = game.Players.LocalPlayer.Character.HumanoidRootPart.Position
-            if game:GetService("Workspace").Grabable["Meteorite Totem"].Ball.CFrame.Y < 2 then
-                return
-            end
-            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Grabable["Meteorite Totem"].Ball.CFrame
-            task.wait(0.1) 
-            game:GetService("ReplicatedStorage").Events.Grab:InvokeServer(game:GetService("Workspace").Grabable["Meteorite Totem"].Ball,{})
-            task.wait(0.5)
-            game:GetService("Workspace").Grabable["Meteorite Totem"].Ball.CFrame = CFrame.new(490.649658203125, 303.3324890136719, 710.9194946289062)
-            task.wait(0.3)
-            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(playerPos.X, playerPos.Y, playerPos.Z)
-            DiscordLib:Notification("Notification", "Meteor Spawning soon...", "Okay!")
-        end
-    )
-    main:Button(
-        "Fix Meteor Totem",
-        function()
-            game:GetService("Workspace").Grabable["Meteorite Totem"].Ball.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
-            task.wait(0.5)
-            game:GetService("Workspace").Grabable["Meteorite Totem"].Ball.CFrame = CFrame.new(0, -900,0)
-            DiscordLib:Notification("Notification", "Meteor Totem Fixed", "Okay!")
-        end
-    )
-    local function getTrusty(noError)
-        noError = noError or false
-        -- 135, 88, 1088 outside of give area
-        -- 
-        local notS, notR, notI = false, false, false
+
+    local notS, notR, notI = false, false, false
+    local function getTrusty()
         -- pre check if all 3 pickaxes are existing
         for i, v in next, game:GetService("Workspace").Grabable:GetChildren() do
             if v.Name == "Boxed Stone Pickaxe" then
@@ -140,32 +90,34 @@ return function()
                 notI = true
             end
         end
-        if not notS or not notR or not notI and not noError then
+        if not notS or not notR or not notI then
             DiscordLib:Notification("Notification", "Pickaxes Haven't Regenerated yet!", "Okay!")
             return
         end
         for i,v in next, game:GetService("Workspace").Grabable:GetChildren() do
             if ((v.Name == "Boxed Stone Pickaxe" and notS) or (v.Name == "Boxed Rusty Pickaxe" and notR) or (v.Name == "Boxed Iron Pickaxe" and notI)) and v:FindFirstChild("Part") then
-                if v.Name == "Boxed Stone Pickaxe" then
-                    notS = false
-                elseif v.Name == "Boxed Rusty Pickaxe" then
-                    notR = false
-                elseif v.Name == "Boxed Iron Pickaxe" then
-                    notI = false
+                if not (v.Part.Position.X < 143+10 and v.Part.Position.X > 143-10 and v.Part.Position.Z < 1105+10 and v.Part.Position.Z > 1105-10) and v.Part.Position.Y > 1 then
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Part.CFrame
+                    game:GetService("ReplicatedStorage").Events.Grab:InvokeServer(v.Part,{})
+                    task.wait(0.1)
+                    v:FindFirstChild("Part").CFrame = CFrame.new(143, 83, 1105)
+                    task.wait(1.5)
                 end
-                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Part.CFrame
-                game:GetService("ReplicatedStorage").Events.Grab:InvokeServer(v.Part,{})
-                task.wait(0.1)
-                v:FindFirstChild("Part").CFrame = CFrame.new(143, 83, 1105)
-                task.wait(1.5)
             end
         end
-        task.wait(0.1)
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(135, 88, 1088)
     end
     main:Button(
         "Give Trusty Pickaxe",
-        getTrusty
+        function ()
+            local t = 0
+            while t<15 do
+                task.spawn(getTrusty)
+                task.wait(0.2)
+                t = t + 1
+            end
+            DiscordLib:Notification("Notification", "Spawned Trusty Pickaxe!", "Okay!")
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(135, 88, 1088)
+        end
     )
     
     local teleportOre = serv:Channel("Teleports: Ore")
@@ -187,7 +139,44 @@ return function()
             end
         )
     end
-    
+    -- WIP
+    -- local tpe = serv:Channel("Teleports: Entities")
+    -- local studs, savedPos = 0, nil
+    -- tpe:Button("Set Position", function()
+    --     savedPos = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+    --     DiscordLib:Notification("Notification", "Position Set!", "Okay!")
+    -- end)    
+    -- tpe:Slider("Studs",10,100,0,
+    --     function(t)
+    --         studs = t
+    --     end
+    -- )
+    -- tpe:Button("Teleport", function()
+    --     if savedPos then
+    --         -- get all entities in studs/2 radius
+    --         local count = 0
+    --         for i, v in pairs(game:GetService("Workspace").Grabable:GetChildren()) do
+    --             print("cycling... : name: ".. v.Name)
+    --             if v.Part.Position.X < game.Players.LocalPlayer.Character.HumanoidRootPart.Position.X + studs/2 and v.Part.Position.X > game.Players.LocalPlayer.Character.HumanoidRootPart.Position.X - studs/2 and v.Part.Position.Z < game.Players.LocalPlayer.Character.HumanoidRootPart.Position.Z + studs/2 and v.Part.Position.Z > game.Players.LocalPlayer.Character.HumanoidRootPart.Position.Z - studs/2 then
+    --                 print("true")
+    --                 print("tping player to item")
+    --                 game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Part.CFrame
+    --                 print("waiting 0.3")
+    --                 task.wait(0.3)
+    --                 print("tping item to pos")
+    --                 v.Part.CFrame = savedPos
+
+    --                 count = count + 1
+    --             else
+    --                 print("false")
+    --             end
+    --         end
+    --         DiscordLib:Notification("Notification", "Teleported "..count.." Entities!", "Okay!")
+    --     else
+    --         DiscordLib:Notification("Notification", "No Position Set!", "Okay!")
+    --     end
+    -- end)
+
     -- get all ores
     local array = {
         "Rock",
@@ -367,7 +356,7 @@ return function()
             end
         end
     )
-    coroutine.wrap(
+    task.spawn(
         function()
             while true do
                 -- get user ping
@@ -376,7 +365,7 @@ return function()
                 timeout = ping+time    
             end
         end
-    )()
+    )
     teleportOre:Seperator()
     for i,v in next, array do
         teleportToOreBTN(v)
@@ -432,47 +421,6 @@ return function()
         )
     end
     checkH()
-    -- -- Auto farm scripts
-    -- makes a loop that runs every 0.1 seconds as long as "Auto Farm" is true
-    local autoFarmf = false
-    task.spawn(
-        function()
-            local sell = {
-                "ArCobble",
-                "WoodPlank2",
-                "WoodPlank"
-            }
-            while true do
-                if autoFarmf then
-                    pcall(function()
-                        for i, v in pairs(workspace.Grabable:GetChildren()) do
-                            if v:FindFirstChild("Part") and v.Part:FindFirstChild("Info") then
-                                if table.find(sell, v.Part.Info.Value) then
-                                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(v.Part.Position)
-                                    task.wait()
-                                    game:GetService("ReplicatedStorage").Events.Grab:InvokeServer(v:FindFirstChild("Part"), {})
-                                    v:FindFirstChild("Part").Position = game:GetService("Workspace").Map.Sellary.Counter.Counter.Position + Vector3.new(math.random(1,5), math.random(1,5), math.random(1,5))
-                                end
-                            end
-                        end
-                        task.wait(1)
-                        workspace.Map.Sellary.Keeper.IPart.Interact:FireServer()
-                        task.wait(0.5)
-                        local btn = game:GetService("Players").LocalPlayer.PlayerGui.UserGui.Dialog:WaitForChild("Yes")
-                        btn.Active = true
-                        btn.Modal = true
-                        firesignal(btn.MouseButton1Click)
-                    end)
-                end
-                task.wait(5)
-            end  
-        end
-    )
-    local autoFarmD = false
-    task.spawn(
-        function()
-        end
-    )
     local mts = true
     task.spawn(
         function()
@@ -489,35 +437,8 @@ return function()
             end
         end
     )
-    -- checks if the user presses the "Auto Farm" button
-    afarm:Toggle(
-        "Auto Farm Wood",
-        false,
-        function(t)
-            if t then
-                autoFarmf = true
-                DiscordLib:Notification("Auto Farm Wood", "Auto Farming Wood has been enabled", "Okay")
-            else
-                autoFarmf = false
-                DiscordLib:Notification("Auto Farm Wood", "Auto Farming Wood has been disabled", "Okay")
-            end
-        end
-    )
     afarm:Seperator()
-    afarm:Label("Soon more will be added...")
-    -- afarm:Toggle(
-        --     "Auto Farm Delivery Box",
-        --     false,
-        --     function(t)
-    --         if t then
-    --             autoFarmD = true
-    --             DiscordLib:Notification("Auto Farm Delivery Box", "Auto Farming Delivery Box has been enabled", "Okay")
-    --         else
-    --             autoFarmD = false
-    --             DiscordLib:Notification("Auto Farm Delivery Box", "Auto Farming Delivery Box has been disabled", "Okay")
-    --         end
-    --     end
-    -- )
+    afarm:Label("Coming soon...")
     misc:Toggle("Show Full Money", true, function(t)
         if t then
             mts = true
@@ -538,16 +459,26 @@ return function()
     main:Label("H - Teleport ores to sell")    
     -- changelog
     local changelog = serv:Channel("Changelog")
-    changelog:Label("Update 1.0.0 - 10/24/2022")
-    changelog:Label("- Initial Release")
-    changelog:Label("")
-    changelog:Label("Update 1.0.1 - 10/25/2022")
-    changelog:Label("- Added Changelog")
-    changelog:Label("- Added No Damage")
-    changelog:Label("- Added No Shadows")
-    changelog:Label("- Added Head Light (Alternative to Always day)")
-    changelog:Label("- Added No Blur")
-    changelog:Label("- Added Auto Farm Wood")
-    changelog:Label("- Added Show Full Money")
-    changelog:Label("- Slowed Down Give Trusty Interval")
+    local change = {
+        "Update 1.0.0 - 10/24/2022",
+        "- Initial Release",
+        "",
+        "Update 1.0.1 - 10/25/2022",
+        "- Added Changelog",
+        "- Added No Damage",
+        "- Added No Shadows",
+        "- Added Head Light (Alternative to Always day)",
+        "- Added No Blur",
+        "- Added Auto Farm Wood",
+        "- Added Show Full Money",
+        "- Slowed Down Give Trusty Interval",
+        "",
+        "Update 1.0.2 - 10/30/2022",
+        "- Removed Meteor Spawn",
+        "- Fixed Patch for Trusty Pickaxe",
+        "- Fixed Changelog"
+    }
+    for i,v in pairs(change) do
+        changelog:Label(v)
+    end
 end
