@@ -1,9 +1,22 @@
+--     _                     _         
+--    / \   _ __   __ _  ___| |    ____
+--   / _ \ | '_ \ / _` |/ _ \ |   |_  /
+--  / ___ \| | | | (_| |  __/ |___ / / 
+-- /_/   \_\_| |_|\__, |\___|_____/___|
+--                 |___/                
+
+-- Created by AngeLz
+-- Helpers: Axajj
+-- We are not responsible for any bans that may occur from using this script.
+-- Making your life easier by giving you the scripts for free!
+-- DO NOT REUPLOAD THIS SCRIPT OR CLAIM IT AS YOUR OWN
+
 local DiscordLib = loadstring(game:HttpGet "https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/discord")()
 
-_G.ff = DiscordLib
-_G.sf = DiscordLib:Window("Whopper Hub")
+getgenv().ff = DiscordLib
+getgenv().sf = DiscordLib:Window("Whopper Hub")
 
-local win = _G.sf
+local win = getgenv().sf
 
 local serverUrl =  "https://raw.githubusercontent.com/AngeLz79/Whopper-Hub/main/"
 
@@ -94,7 +107,15 @@ main:Button(
     end
 )
 
--- makes a slider
+getgenv().walk, getgenv().jump = 16,50
+task.spawn(function()
+    while true do
+        task.wait(0)
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = getgenv().walk
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = getgenv().jump
+    end
+end)
+
 local sldr =
 misc:Slider(
     "Speed",
@@ -102,7 +123,7 @@ misc:Slider(
     250,
     0,
     function(t)
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = t
+        getgenv().walk = t
     end
 )
 
@@ -115,6 +136,16 @@ misc:Slider(
     250,
     0,
     function(t)
-        game.Players.LocalPlayer.Character.Humanoid.JumpPower = t
+        getgenv().jump = t
     end
 )
+
+-- anti afk
+coroutine.wrap(function()
+    local vu = game:GetService("VirtualUser")
+    game:GetService("Players").LocalPlayer.Idled:connect(function()
+       vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+       wait(1)
+       vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+    end)
+end)()
