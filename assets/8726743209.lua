@@ -5,18 +5,27 @@
 -- /_/   \_\_| |_|\__, |\___|_____/___|
 --                 |___/                
 
--- Refinery Caves 1.0.2 
+-- Refinery Caves 1.0.3
 -- Created by AngeLz, Ran with the WhopperHub
 -- Helpers: Axajj
 -- We are not responsible for any bans that may occur from using this script.
 -- Making your life easier by giving you the scripts for free!
 -- DO NOT REUPLOAD THIS SCRIPT OR CLAIM IT AS YOUR OWN
 
+local function randomKey(length)
+    local str = ""
+    for i = 1, length do
+        str = str .. string.char(math.random(97, 122))
+    end
+    return str
+end
+
 return function()
     if not getgenv().sf then
         print("Don't run directly")
     end
-
+    getgenv().uuid = randomKey(90)
+    local localuuid = getgenv().uuid
     local win = getgenv().sf
     local DiscordLib = getgenv().ff
     local serv = win:Server("Refinery Caves", "")
@@ -25,12 +34,19 @@ return function()
     local afarm = serv:Channel("Auto Farm")
     local timeout = 0.05 -- 50ms
     local teleports = serv:Channel("Teleports")
+    task.spawn(function()
+        while true do
+            wait(0)
+            pcall(function()
+                game.Players.LocalPlayer.Character["OwoChan Character"]:Destroy()
+            end)
+        end
+    end)
     misc:Slider("Speed",16,250,0,
         function(t)
             getgenv().walk = t
         end
     )
-    DiscordLib:Notification("Warning", "All Teleports are currently broken as of last update, We are currently trying to fix this", "Okay!")
     misc:Slider("Jump",50,250,0,
         function(t)
             getgenv().jump = t
@@ -39,7 +55,7 @@ return function()
     local function teleportBTN(x,y,z, name)
         teleports:Button(
             name,
-            function()
+            function()               
                 game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(x,y,z)
             end
         )    
@@ -108,6 +124,28 @@ return function()
         end
     end
     main:Button(
+        "Teleport Meteor Key",
+        function()
+            -- justs makes sure its not in the ground
+            if game:GetService("Workspace").Grabable["Meteorite Totem"].Ball.CFrame.Y < 2 then
+                return
+            end
+            -- checks if owner is local player
+            if game:GetService("Workspace").Grabable["Meteorite Totem"].Owner then
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Grabable["Meteorite Totem"].Ball.CFrame
+                task.wait(0.1) 
+                game:GetService("ReplicatedStorage").Events.Grab:InvokeServer(game:GetService("Workspace").Grabable["Meteorite Totem"].Ball,{})
+                task.wait(0.5)
+                game:GetService("Workspace").Grabable["Meteorite Totem"].Ball.CFrame = CFrame.new(490.649658203125, 303.3324890136719, 710.9194946289062)
+                task.wait(0.3)
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Grabable["Meteorite Totem"].Ball.CFrame + Vector3.new(0,10,0)
+                DiscordLib:Notification("Notification", "Meteor Spawning soon...", "Okay!")
+            else
+                DiscordLib:Notification("Notification", "You don't own the Meteor Totem!", "Okay!")
+            end
+        end
+    )
+    main:Button(
         "Give Trusty Pickaxe",
         function ()
             local t = 0
@@ -141,42 +179,92 @@ return function()
         )
     end
     -- WIP
-    -- local tpe = serv:Channel("Teleports: Entities")
-    -- local studs, savedPos = 0, nil
-    -- tpe:Button("Set Position", function()
-    --     savedPos = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
-    --     DiscordLib:Notification("Notification", "Position Set!", "Okay!")
-    -- end)    
-    -- tpe:Slider("Studs",10,100,0,
-    --     function(t)
-    --         studs = t
-    --     end
-    -- )
-    -- tpe:Button("Teleport", function()
-    --     if savedPos then
-    --         -- get all entities in studs/2 radius
-    --         local count = 0
-    --         for i, v in pairs(game:GetService("Workspace").Grabable:GetChildren()) do
-    --             print("cycling... : name: ".. v.Name)
-    --             if v.Part.Position.X < game.Players.LocalPlayer.Character.HumanoidRootPart.Position.X + studs/2 and v.Part.Position.X > game.Players.LocalPlayer.Character.HumanoidRootPart.Position.X - studs/2 and v.Part.Position.Z < game.Players.LocalPlayer.Character.HumanoidRootPart.Position.Z + studs/2 and v.Part.Position.Z > game.Players.LocalPlayer.Character.HumanoidRootPart.Position.Z - studs/2 then
-    --                 print("true")
-    --                 print("tping player to item")
-    --                 game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Part.CFrame
-    --                 print("waiting 0.3")
-    --                 task.wait(0.3)
-    --                 print("tping item to pos")
-    --                 v.Part.CFrame = savedPos
+    local tpe = serv:Channel("Teleports: Entities")
+    local studs, savedPos, tpSpeed, tries = 10, nil, 1, 1
+    tpe:Button("Set Position", function()
+        if getgenv().glow then
+            getgenv().glow:Destroy()
+        end
+        -- creates a glowing object that shows the saved position        
+        savedPos = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+        getgenv().glow = Instance.new("Part")
+        getgenv().glow.Anchored = true
+        getgenv().glow.CanCollide = false
+        getgenv().glow.Size = Vector3.new(1,1,1)
+        getgenv().glow.Transparency = 0.5
+        getgenv().glow.Color = Color3.fromRGB(255, 0, 0)
+        getgenv().glow.Material = Enum.Material.Neon
+        getgenv().glow.Name = "Glow"
+        getgenv().glow.Parent = game.Workspace
+        getgenv().glow.CFrame = savedPos
+        DiscordLib:Notification("Notification", "Position Set!", "Okay!")
+    end)    
+    tpe:Slider("Speed", 1,100,1,
+        function(value)
+            tpSpeed = value
+        end
+    )
+    tpe:Slider("Tries", 1,100,1,
+        function(value)
+            tries = value
+        end
+    )
+    tpe:Slider("Studs",10,100,0,
+        function(t)
+            studs = t
+        end
+    )
+    local entities = {}
+    local d = game.Players.LocalPlayer.Character.HumanoidRootPart
+    local r = 0
+    task.spawn(function()
+        while localuuid==getgenv().uuid do
+            task.wait(0)
+            if #entities > 0 then
+                local v = entities[1]                
+                if v:FindFirstChild("Owner") and v:FindFirstChild("Part") then -- checks if its valid obj
+                    --if v.Part.Position.X < d.Position.X + studs/2 and v.Part.Position.X > d.Position.X - studs/2 and v.Part.Position.Z < d.Position.Z + studs/2 and v.Part.Position.Z > d.Position.Z - studs/2 then
+                    if r <= tries then
+                        r = r + 1
+                        -- teleports to the object
+                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Part.CFrame
+                        game:GetService("ReplicatedStorage").Events.Grab:InvokeServer(v.Part,{})
+                        task.wait(tpSpeed/100)
+                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = savedPos
+                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Part.CFrame
+                        v:FindFirstChild("Part").CFrame = savedPos
+                    else
+                        r = 0
+                        table.remove(entities, 1)
+                    end
+                end
+            end
+        end
+    end)
+    tpe:Button("Teleport", function()
+        if savedPos then
+            -- get all entities in studs/2 radius
+            local count = 0
+            d = game.Players.LocalPlayer.Character.HumanoidRootPart
+            for i, v in pairs(game:GetService("Workspace").Grabable:GetChildren()) do
+                if v:FindFirstChild("Owner") and v:FindFirstChild("Part") then -- checks if its valid obj
+                    if v.Part.Position.X < d.Position.X + studs/2 and v.Part.Position.X > d.Position.X - studs/2 and v.Part.Position.Z < d.Position.Z + studs/2 and v.Part.Position.Z > d.Position.Z - studs/2 then
+                        entities[#entities+1] = v
+                    end
+                end
+            end
+            -- teleports to the entity and tries to teleport it until its successful then removes from table
 
-    --                 count = count + 1
-    --             else
-    --                 print("false")
-    --             end
-    --         end
-    --         DiscordLib:Notification("Notification", "Teleported "..count.." Entities!", "Okay!")
-    --     else
-    --         DiscordLib:Notification("Notification", "No Position Set!", "Okay!")
-    --     end
-    -- end)
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Part.CFrame
+            task.wait(0.3)
+            v.Part.CFrame = savedPos
+
+            count = count + 1
+            DiscordLib:Notification("Notification", "Teleported "..count.." Entities!", "Okay!")
+        else
+            DiscordLib:Notification("Notification", "No Position Set!", "Okay!")
+        end
+    end)
 
     -- get all ores
     local array = {
@@ -425,7 +513,7 @@ return function()
     local mts = true
     task.spawn(
         function()
-            while true do 
+            while localuuid==getgenv().uuid do 
                 task.wait()
                 if mts then
                     local function conv(int)
@@ -477,7 +565,10 @@ return function()
         "Update 1.0.2 - 10/30/2022",
         "- Removed Meteor Spawn",
         "- Fixed Patch for Trusty Pickaxe",
-        "- Fixed Changelog"
+        "Update 1.0.3 - 10/31/2022",
+        "- Added Teleport Owned Meteor Key",
+        "- Removed Anti Cheat lol",
+        "- Added Entities teleports"
     }
     for i,v in pairs(change) do
         changelog:Label(v)
